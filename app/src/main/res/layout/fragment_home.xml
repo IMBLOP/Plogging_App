@@ -47,11 +47,12 @@
                 android:text="키 175cm  몸무게 68kg"
                 android:textColor="#666"
                 android:textSize="14sp" />
+
             <TextView
                 android:id="@+id/tv_user_sex"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="성별 : F"
+                android:text="성별 : ♂"
                 android:textColor="#666"
                 android:textSize="14sp" />
 
