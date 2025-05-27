@@ -1,0 +1,291 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/home_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- 사용자 프로필 영역 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="30dp"
+        android:paddingBottom="30dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/black_border_background"
+        >
+
+        <ImageView
+            android:id="@+id/img_user"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginLeft="15dp"
+            android:src="@drawable/ic_user_placeholder" />  <!-- 기본 이미지 -->
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_user_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="홍길동"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_user_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="키 175cm  몸무게 68kg"
+                android:textColor="#666"
+                android:textSize="14sp" />
+            <TextView
+                android:id="@+id/tv_user_sex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="성별 : F"
+                android:textColor="#666"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- 기존 버튼 영역과 데이터 레이아웃들 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal|end"
+        android:layout_marginBottom="8dp"
+        android:weightSum="2"
+        android:divider="?android:attr/dividerVertical"
+        android:showDividers="middle"
+        android:dividerPadding="8dp">
+
+        <Button
+            android:id="@+id/btn_activity"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="15dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_border"
+            android:text="활동"
+            android:textColor="#7B4BFF"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btn_nutrition"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="15dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_border"
+            android:text="영양"
+            android:textColor="#7B4BFF"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+
+    <!-- 활동 데이터 -->
+    <LinearLayout
+        android:id="@+id/layout_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="이번 주 칼로리 소비량 (요일별)"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/bar_chart"
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+
+    <!-- 영양 데이터 -->
+    <LinearLayout
+        android:id="@+id/layout_nutrition"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="오늘 섭취한 식사 칼로리"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:paddingBottom="8dp"/>
+
+        <!-- 아침 카드 -->
+        <!-- 아침 카드 -->
+        <LinearLayout
+            android:id="@+id/card_breakfast"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tv_breakfast_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="아침"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tv_breakfast_cal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="총 450 kcal"
+                android:paddingTop="8dp"/>
+
+            <!-- 메뉴별 칼로리 -->
+            <TextView
+                android:id="@+id/tv_breakfast_menu1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="김밥 : 250 kcal"
+                android:paddingTop="4dp"/>
+            <TextView
+                android:id="@+id/tv_breakfast_menu2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="바나나 : 100 kcal"
+                android:paddingTop="2dp"/>
+            <TextView
+                android:id="@+id/tv_breakfast_menu3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="우유 : 100 kcal"
+                android:paddingTop="2dp"/>
+
+        </LinearLayout>
+
+        <!-- 점심 카드 -->
+        <LinearLayout
+            android:id="@+id/card_lunch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tv_lunch_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="점심"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tv_lunch_cal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="총 700 kcal"
+                android:paddingTop="8dp"/>
+
+            <TextView
+                android:id="@+id/tv_lunch_menu1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="비빔밥 : 400 kcal"
+                android:paddingTop="4dp"/>
+            <TextView
+                android:id="@+id/tv_lunch_menu2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="된장국 : 100 kcal"
+                android:paddingTop="2dp"/>
+            <TextView
+                android:id="@+id/tv_lunch_menu3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="과일 : 200 kcal"
+                android:paddingTop="2dp"/>
+
+        </LinearLayout>
+
+        <!-- 저녁 카드 -->
+        <LinearLayout
+            android:id="@+id/card_dinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tv_dinner_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="저녁"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tv_dinner_cal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="총 600 kcal"
+                android:paddingTop="8dp"/>
+
+            <TextView
+                android:id="@+id/tv_dinner_menu1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="닭가슴살 : 300 kcal"
+                android:paddingTop="4dp"/>
+            <TextView
+                android:id="@+id/tv_dinner_menu2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="샐러드 : 200 kcal"
+                android:paddingTop="2dp"/>
+            <TextView
+                android:id="@+id/tv_dinner_menu3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="두부 : 100 kcal"
+                android:paddingTop="2dp"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_total_calories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="총 섭취 칼로리: 1750 kcal"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:gravity="end"
+            android:paddingTop="12dp"/>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
