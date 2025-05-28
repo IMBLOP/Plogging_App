@@ -1,0 +1,106 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/img_stretch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="스트레칭 이미지"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginBottom="12dp"
+            android:textColor="#222222"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_info"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_marginBottom="24dp"
+            android:background="#F5F5F5"
+            android:lineSpacingExtra="4dp"
+            android:padding="16dp"
+            android:textColor="#444444"
+            android:textSize="16sp" />
+
+        <!-- 썸네일 이미지 3개 가로로 배치 -->
+
+        <!-- 운동 텍스트 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_gravity="start"
+            android:text="운동"
+            android:textColor="#222222"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:divider="?android:attr/dividerHorizontal"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:showDividers="middle">
+
+            <ImageView
+                android:id="@+id/thumb1"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_margin="4dp"
+                android:contentDescription="썸네일1"
+                android:background="@drawable/bg_square_thumb"
+                android:layout_marginEnd="12dp"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/thumb2"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_margin="4dp"
+                android:contentDescription="썸네일2"
+                android:background="@drawable/bg_square_thumb"
+                android:layout_marginEnd="12dp"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/thumb3"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_margin="4dp"
+                android:contentDescription="썸네일3"
+                android:background="@drawable/bg_square_thumb"
+                android:layout_marginEnd="12dp"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/thumb4"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_margin="4dp"
+                android:contentDescription="썸네일4"
+                android:background="@drawable/bg_square_thumb"
+                android:layout_marginEnd="12dp"
+                android:scaleType="centerCrop" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

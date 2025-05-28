@@ -1,10 +1,12 @@
 package com.inhatc.plogging;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,8 +36,8 @@ public class MainActivity extends AppCompatActivity {
                 selected = new StatsFragment();
             } else if (itemId == R.id.nav_history) {
                 selected = new HistoryFragment();
-            } else if (itemId == R.id.nav_profile) {
-                selected = new ProfileFragment();
+            } else if (itemId == R.id.nav_info) {
+                selected = new InfoFragment();
             }
             if (selected != null) {
                 getSupportFragmentManager()
@@ -44,6 +46,13 @@ public class MainActivity extends AppCompatActivity {
                         .commit();
             }
             return true;
+        });
+        
+        // Google Map 여기 삽입
+        FloatingActionButton fab = findViewById(R.id.btn_start_workout);
+        fab.setOnClickListener(v -> {
+            Log.d("FAB_Click", "운동 시작 버튼 클릭됨");
+            Log.d("FAB_Click", "구글 맵 실행부분");
         });
 
     }
