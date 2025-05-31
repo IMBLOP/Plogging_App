@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
@@ -32,6 +33,7 @@ public class StatsFragment extends Fragment {
     private Button btnPlogging, btnUpload;
     private View layoutDistance;
     private View gridPhotos;
+    private SharedViewModel viewModel; // 데이터 저장
 
     private PieChart pieChartDaily, pieChartWeekly, pieChartMonthly;
     private final List<Uri> imageList = new ArrayList<>();
@@ -88,6 +90,15 @@ public class StatsFragment extends Fragment {
         });
 
         btnUpload.setOnClickListener(v -> openGallery());
+
+        viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        viewModel.getImageUris().observe(getViewLifecycleOwner(), uris -> {
+            imageList.clear();
+            imageList.addAll(uris);
+            if (gridPhotos.getVisibility() == View.VISIBLE) {
+                showPhotoLayout();
+            }
+        });
 
         // 원형 그래프 초기화 및 샘플 데이터 세팅
         setupPieChart(pieChartDaily);
@@ -223,10 +234,7 @@ public class StatsFragment extends Fragment {
 
     public void receiveImage(Uri imageUri) {
         if (imageUri != null) {
-            imageList.add(imageUri);
-            if (photoGrid != null && gridPhotos.getVisibility() == View.VISIBLE) {
-                showPhotoLayout(); // 사진 레이아웃이 열려 있을 때만 갱신
-            }
+            viewModel.addImageUri(imageUri);
         }
     }
 

@@ -7,15 +7,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/layout_buttons"
-        android:padding="16dp"
-        android:orientation="vertical">
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="1dp"
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <LinearLayout
             android:id="@+id/layout_distance_stats"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="30dp">
+            android:layout_marginTop="30dp"
+            android:orientation="vertical">
 
             <!-- 일간 통계 -->
             <LinearLayout
@@ -167,14 +170,16 @@
             </LinearLayout>
 
         </LinearLayout>
+
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"> <!-- 원하는 높이 지정 -->
+            android:layout_height="wrap_content">
 
             <LinearLayout
                 android:id="@+id/grid_photos"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
                 android:background="@drawable/card_background"
                 android:orientation="vertical"
                 android:visibility="gone">
@@ -192,8 +197,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_columnWeight="1"
-                        android:orientation="vertical"
                         android:gravity="center_horizontal"
+                        android:orientation="vertical"
                         android:padding="4dp">
 
                         <ImageView
@@ -207,8 +212,8 @@
                             android:layout_height="wrap_content"
                             android:text="깡통"
                             android:textAlignment="center"
-                            android:textSize="14sp"
-                            android:textColor="#000" />
+                            android:textColor="#000"
+                            android:textSize="14sp" />
                     </LinearLayout>
 
                     <!-- 다른 아이템도 같은 구조로 반복 -->

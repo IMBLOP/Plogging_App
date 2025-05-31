@@ -53,12 +53,12 @@ public class HomeFragment extends Fragment {
         BarChart barChart = view.findViewById(R.id.bar_chart);
 
         ArrayList<BarEntry> entries = new ArrayList<>();
-        entries.add(new BarEntry(0, 350)); // 월
-        entries.add(new BarEntry(1, 420)); // 화
-        entries.add(new BarEntry(2, 300)); // 수
-        entries.add(new BarEntry(3, 500)); // 목
-        entries.add(new BarEntry(4, 380)); // 금
-        entries.add(new BarEntry(5, 450)); // 토
+        entries.add(new BarEntry(0, 2300)); // 월
+        entries.add(new BarEntry(1, 1750)); // 화
+        entries.add(new BarEntry(2, 0)); // 수
+        entries.add(new BarEntry(3, 0)); // 목
+        entries.add(new BarEntry(4, 0)); // 금
+        entries.add(new BarEntry(5, 0)); // 토
         entries.add(new BarEntry(6, 0)); // 일
 
         BarDataSet dataSet = new BarDataSet(entries, "소비 칼로리 (kcal)");
