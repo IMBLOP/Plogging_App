@@ -1,6 +1,7 @@
 package com.inhatc.plogging;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -12,6 +13,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 public class MainActivity extends AppCompatActivity {
 
     BottomNavigationView bottomNav;
+    private Uri photoUri;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,12 +32,14 @@ public class MainActivity extends AppCompatActivity {
         // 메뉴 클릭 시 Fragment 변경
         bottomNav.setOnItemSelectedListener(item -> {
             Fragment selected = null;
+            String tag = null;
             int itemId = item.getItemId();
 
             if (itemId == R.id.nav_home) {
                 selected = new HomeFragment();
             } else if (itemId == R.id.nav_stats) {
                 selected = new StatsFragment();
+                tag = "stats_fragment_tag";
             } else if (itemId == R.id.nav_history) {
                 selected = new HistoryFragment();
             } else if (itemId == R.id.nav_info) {
@@ -43,12 +48,13 @@ public class MainActivity extends AppCompatActivity {
             if (selected != null) {
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.fragment_container, selected)
+                        .replace(R.id.fragment_container, selected, tag)
                         .commit();
             }
             return true;
         });
-        
+
+
         // Google Map 여기 삽입
         FloatingActionButton fab = findViewById(R.id.btn_start_workout);
         fab.setOnClickListener(v -> {
@@ -59,4 +65,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+
 }

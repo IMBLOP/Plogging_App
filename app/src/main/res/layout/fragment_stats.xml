@@ -2,23 +2,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<ScrollView
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_above="@+id/layout_buttons"
-    android:padding="16dp">
-
     <LinearLayout
+        android:id="@+id/layout_main_content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_height="match_parent"
+        android:layout_above="@id/layout_buttons"
+        android:padding="16dp"
         android:orientation="vertical">
 
         <LinearLayout
             android:id="@+id/layout_distance_stats"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginTop="30dp">
 
             <!-- 일간 통계 -->
             <LinearLayout
@@ -170,45 +167,94 @@
             </LinearLayout>
 
         </LinearLayout>
-
-
-        <LinearLayout
-            android:id="@+id/grid_photos"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:background="@drawable/card_background">
+            android:layout_height="match_parent"> <!-- 원하는 높이 지정 -->
 
-            <GridLayout
-                android:id="@+id/photo_grid"
+            <LinearLayout
+                android:id="@+id/grid_photos"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:columnCount="3"
-                android:orientation="horizontal"
-                android:useDefaultMargins="true"
-                android:alignmentMode="alignMargins" />
+                android:background="@drawable/card_background"
+                android:orientation="vertical"
+                android:visibility="gone">
 
-        </LinearLayout>
+                <GridLayout
+                    android:id="@+id/photo_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:orientation="horizontal"
+                    android:useDefaultMargins="true">
 
-        </LinearLayout>
-    </ScrollView>
+                    <!-- 아이템 1 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal"
+                        android:padding="4dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="150dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/plog1" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="깡통"
+                            android:textAlignment="center"
+                            android:textSize="14sp"
+                            android:textColor="#000" />
+                    </LinearLayout>
+
+                    <!-- 다른 아이템도 같은 구조로 반복 -->
+                </GridLayout>
+
+
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_upload_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/layout_buttons"
+        android:layout_marginBottom="8dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_upload"
+            android:layout_width="match_parent"
+            android:layout_margin="15dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/border_button"
+            android:backgroundTint="@android:color/transparent"
+            android:text="업로드"
+            android:textColor="@android:color/black"
+            android:visibility="gone" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/layout_buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_margin="20dp"
+        android:layout_marginBottom="130dp"
         android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingBottom="130dp">
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btn_record"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:layout_margin="15dp"
             android:layout_weight="1"
             android:background="@drawable/border_button"
             android:backgroundTint="@android:color/transparent"
@@ -219,12 +265,12 @@
             android:id="@+id/btn_plogging"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_margin="15dp"
             android:layout_weight="1"
             android:background="@drawable/border_button"
             android:backgroundTint="@android:color/transparent"
             android:text="플로깅"
             android:textColor="@android:color/black" />
-
     </LinearLayout>
+
 </RelativeLayout>
