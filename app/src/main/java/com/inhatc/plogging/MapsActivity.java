@@ -1,6 +1,7 @@
 package com.inhatc.plogging;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
@@ -11,7 +12,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.MediaStore;
 import android.provider.Settings;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -23,11 +28,22 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.inhatc.plogging.databinding.ActivityMapsBinding;
 
+import java.util.Locale;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
     private LatLng objLocation;
+    private boolean isRunning = false;
+    private long startTime = 0L;
+    private Handler handler = new Handler();
+    private Runnable timerRunnable;
+
+    private ImageButton btnToggle, btnReset, btnBack, btnCamera;
+    private TextView tvTime;
+    private long pausedTime = 0L;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +51,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        btnToggle = findViewById(R.id.btn_toggle);
+        btnReset = findViewById(R.id.btn_reset);
+        tvTime = findViewById(R.id.tv_time);
+
+        btnToggle.setOnClickListener(v -> toggleRunState());
+
+        btnReset.setOnClickListener(v -> {
+            isRunning = false;
+            pausedTime = 0L;
+            tvTime.setText("00:00.00");
+            handler.removeCallbacks(timerRunnable);
+            btnToggle.setBackgroundResource(R.drawable.start);
+        });
+
+        // 뒤로가기 버튼
+        btnBack = findViewById(R.id.btn_back);
+        btnBack.setOnClickListener(v -> onBackPressed());
+
+        btnCamera = findViewById(R.id.btn_camera);
+        btnCamera.setOnClickListener(v -> {
+            // 권한 체크
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA}, 200);
+                return;
+            }
+
+            // 카메라 인텐트 실행
+            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+                startActivity(cameraIntent);
+            } else {
+                Toast.makeText(this, "카메라 앱을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -89,6 +143,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         strLocationProvider = LocationManager.NETWORK_PROVIDER;
         locationManager.requestLocationUpdates(strLocationProvider, minTime, minDistance, locationListener);
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed(); // 기본 뒤로가기 동작 수행
+    }
+
     public void mUpdateMap(Location location){
         double dLatitude = location.getLatitude();
         double dLongitude = location.getLongitude();
@@ -111,4 +171,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void mAlertStatus(String strProvider){
         Toast.makeText(this, "Changing location service: " + strProvider, Toast.LENGTH_LONG).show();
     }
+
+
+    private void toggleRunState() {
+        if (!isRunning) {
+            // 시작
+            isRunning = true;
+            startTime = System.currentTimeMillis() - pausedTime; // 일시 정지 시간 고려
+            btnToggle.setBackgroundResource(R.drawable.stop);
+
+            timerRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    long elapsed = System.currentTimeMillis() - startTime;
+                    pausedTime = elapsed;
+
+                    int minutes = (int) (elapsed / 1000) / 60;
+                    int seconds = (int) (elapsed / 1000) % 60;
+                    int hundredths = (int) (elapsed % 1000) / 10; // 1/100초 단위
+
+                    String time = String.format(Locale.getDefault(), "%02d:%02d.%02d", minutes, seconds, hundredths);
+                    tvTime.setText(time);
+
+                    handler.postDelayed(this, 10); // 10ms 단위로 갱신
+                }
+            };
+            handler.post(timerRunnable);
+
+        } else {
+            // 정지 (시간 유지)
+            isRunning = false;
+            handler.removeCallbacks(timerRunnable);
+            btnToggle.setBackgroundResource(R.drawable.start);
+        }
+    }
+
+
 }
