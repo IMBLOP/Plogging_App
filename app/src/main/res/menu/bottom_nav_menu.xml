@@ -1,0 +1,21 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@android:drawable/ic_menu_view"
+        android:title="홈" />
+    <item
+        android:id="@+id/nav_stats"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:title="통계" />
+
+    <!-- 가운데 아이템은 비워두지 말고 FAB로 처리 -->
+
+    <item
+        android:id="@+id/nav_history"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:title="일정" />
+    <item
+        android:id="@+id/nav_info"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="정보" />
+</menu>
