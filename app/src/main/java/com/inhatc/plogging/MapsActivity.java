@@ -268,16 +268,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if (isRunning) {
             avgSpeed = (elapsedTime > 0) ? (totalDistance / (elapsedTime / 1000f)) * 3.6f : 0f;
+
+            polylinePath.add(objLocation);
+            polyline.setPoints(polylinePath);
         } else {
             avgSpeed = 0f;
         }
 
         tvSpeend.setText(String.format(Locale.getDefault(), "%.2f km/h", avgSpeed));
         tvDistance.setText(String.format(Locale.getDefault(), "%.2f km", totalDistance / 1000f));
-
-        polylinePath.add(objLocation);
-        polyline.setPoints(polylinePath);
     }
+
 
     private void checkProvider(String provider) {
         Toast.makeText(this, provider + ": 위치 서비스가 꺼져 있습니다.", Toast.LENGTH_SHORT).show();
