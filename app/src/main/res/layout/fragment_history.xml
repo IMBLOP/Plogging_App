@@ -12,11 +12,12 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="📅 날짜 선택"
-        android:textSize="18sp"
-        android:textStyle="bold"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="20dp"
+        android:text="📅 일정"
         android:textColor="#333333"
-        android:layout_marginBottom="8dp" />
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <CalendarView
         android:id="@+id/calendar_view"
@@ -26,17 +27,37 @@
         android:background="@drawable/calendar_background"
         android:elevation="2dp" />
 
-    <!-- 선택된 날짜 -->
-    <TextView
-        android:id="@+id/tv_selected_date"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="선택된 날짜: "
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:textColor="#000000"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="12dp" />
+        android:layout_marginBottom="12dp"
+        android:paddingHorizontal="16dp">
+
+        <TextView
+            android:id="@+id/tv_selected_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="선택된 날짜: "
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#000000" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_add_event"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="추가"
+            android:textColor="@android:color/white"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            style="@style/Widget.MaterialComponents.Button" />
+
+    </LinearLayout>
+
 
     <!-- 일정 목록 -->
     <ListView

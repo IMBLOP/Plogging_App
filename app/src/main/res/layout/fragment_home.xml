@@ -1,5 +1,4 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/home_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,13 +9,12 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/card_background"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingTop="30dp"
-        android:paddingBottom="30dp"
-        android:layout_marginTop="24dp"
-        android:background="@drawable/card_background"
-        >
+        android:paddingBottom="30dp">
 
         <ImageView
             android:id="@+id/img_user"
@@ -64,13 +62,13 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_horizontal|end"
         android:layout_marginBottom="8dp"
-        android:weightSum="2"
-        android:showDividers="middle"
         android:divider="?android:attr/dividerVertical"
-        android:dividerPadding="12dp">
+        android:dividerPadding="12dp"
+        android:gravity="center_horizontal|end"
+        android:orientation="horizontal"
+        android:showDividers="middle"
+        android:weightSum="2">
 
         <Button
             android:id="@+id/btn_activity"
@@ -86,7 +84,7 @@
 
         <Space
             android:layout_width="16dp"
-        android:layout_height="wrap_content" />
+            android:layout_height="wrap_content" />
 
         <Button
             android:id="@+id/btn_nutrition"
@@ -119,11 +117,11 @@
             android:textStyle="bold" />
 
         <com.github.mikephil.charting.charts.BarChart
-            android:background="@drawable/card_background"
             android:id="@+id/bar_chart"
             android:layout_width="match_parent"
-            android:layout_height="500dp"
-            android:layout_marginTop="16dp" />
+            android:layout_height="450dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/card_background" />
 
     </LinearLayout>
 
