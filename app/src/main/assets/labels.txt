@@ -1,60 +1,60 @@
-Aluminium foil
-Battery
-Aluminium blister pack
-Carded blister pack
-Other plastic bottle
-Clear plastic bottle
-Glass bottle
-Plastic bottle cap
-Metal bottle cap
-Broken glass
-Food Can
-Aerosol
-Drink can
-Toilet tube
-Other carton
-Egg carton
-Drink carton
-Corrugated carton
-Meal carton
-Pizza box
-Paper cup
-Disposable plastic cup
-Foam cup
-Glass cup
-Other plastic cup
-Food waste
-Glass jar
-Plastic lid
-Metal lid
-Other plastic
-Magazine paper
-Tissues
-Wrapping paper
-Normal paper
-Paper bag
-Plastified paper bag
-Plastic film
-Six pack rings
-Garbage bag
-Other plastic wrapper
-Single-use carrier bag
-Polypropylene bag
-Crisp packet
-Spread tub
-Tupperware
-Disposable food container
-Foam food container
-Other plastic container
-Plastic glooves
-Plastic utensils
-Pop tab
-Rope & strings
-Scrap metal
-Shoe
-Squeezable tube
-Plastic straw
-Paper straw
-Styrofoam piece
-Unlabeled litter
-Cigarette
+알루미늄 호일
+배터리
+알루미늄 블리스터 팩
+카드형 블리스터 팩
+플라스틱병(기타)
+플라스틱병(투명)
+유리병
+플라스틱 병 뚜껑
+병 뚜껑(금속)
+유리 조각
+통조림 캔
+에어로졸
+음료수 캔
+휴지 심
+종이팩(기타)
+계란 상자
+음료수 팩
+골판지 상자
+식품용 상자
+피자 박스
+종이컵
+일회용 플라스틱 컵
+스티로폼 컵
+유리컵
+플라스틱 컵(기타)
+음식물 쓰레기
+유리병(병류)
+플라스틱 뚜껑
+금속 뚜껑
+플라스틱(기타)
+잡지(전단지)
+휴지
+포장지
+종이(일반)
+종이봉투
+종이봉투(코팅)
+플라스틱 필름
+묶음 링
+쓰레기 봉투
+플라스틱 포장재(기타)
+일회용 비닐
+봉투(폴리프로틸렌)
+과자봉지
+스프레드 통
+밀폐용기
+식품 용기(일회용)
+식품 용기(스티로폼)
+플라스틱 용기(기타)
+플라스틱 장갑
+플라스틱 식기
+음료캔 탭
+끈/로프
+금속 스크랩
+신발
+튜브형 용기
+플라스틱 빨대
+종이 빨대
+스티로폼 조각
+미분류 쓰레기
+담배꽁초
