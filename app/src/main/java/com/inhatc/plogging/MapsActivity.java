@@ -4,8 +4,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentActivity;
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -19,10 +21,14 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,6 +68,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private float avgSpeed = 0.0f;
     private Location lastLocation = null;
 
+    private Detector detector;
+    private Bitmap lastCapturedBitmap = null;
+
+    private Uri photoUri; // 촬영한 이미지가 저장될 경로
+    private File photoFile; // 저장 파일 객체
+
+
     private PolylineOptions polylineOptions = new PolylineOptions()
             .width(12f)
             .color(Color.parseColor("#853BF0"))
@@ -85,6 +98,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        detector = new Detector(
+                this,
+                "best_float32.tflite",
+                "labels.txt",
+                new Detector.DetectorListener() {
+                    @Override
+                    public void onEmptyDetect() {
+                        runOnUiThread(() -> showResultDialog(null, new ArrayList<>()));
+                    }
+                    @Override
+                    public void onDetect(List<BoundingBox> boxes, long inferenceTime) {
+                        List<String> labels = new ArrayList<>();
+                        for (BoundingBox box : boxes) {
+                            if (!labels.contains(box.getClsName())) {
+                                labels.add(box.getClsName());
+                            }
+                        }
+                        runOnUiThread(() -> showResultDialog(lastCapturedBitmap, labels));
+                    }
+                }
+        );
+        try {
+            detector.setup();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "모델 로드 실패", Toast.LENGTH_SHORT).show();
+        }
+
         btnToggle = findViewById(R.id.btn_toggle);
         btnReset = findViewById(R.id.btn_reset);
         btnMyLocation = findViewById(R.id.btn_my_location);
@@ -98,25 +139,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         btnBack = findViewById(R.id.btn_back);
         btnBack.setOnClickListener(v -> onBackPressed());
 
-        btnCamera = findViewById(R.id.btn_camera);
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Bitmap photo = (Bitmap) result.getData().getExtras().get("data");
-                        if (photo != null) {
-                            Uri savedUri = saveBitmapToGallery(photo);
-                            if (savedUri != null) {
-                                Toast.makeText(this, "사진이 저장되었습니다.", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(this, "이미지 저장 실패", Toast.LENGTH_SHORT).show();
+                    if (result.getResultCode() == RESULT_OK) {
+                        if (photoUri != null) {
+                            try {
+                                Bitmap photo = MediaStore.Images.Media.getBitmap(getContentResolver(), photoUri);
+                                // 비트맵 크기가 너무 크면 리사이즈 (예: 640x640 유지)
+                                Bitmap resized = Bitmap.createScaledBitmap(photo, 640, 640, true);
+                                lastCapturedBitmap = resized;
+                                detector.detect(resized);
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
-                        } else {
-                            Toast.makeText(this, "사진을 가져올 수 없습니다.", Toast.LENGTH_SHORT).show();
                         }
                     }
-                });
+                }
+        );
 
+
+        btnCamera = findViewById(R.id.btn_camera);
         btnCamera.setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -157,6 +200,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return null;
     }
 
+    private void showResultDialog(Bitmap photo, List<String> labels) { //쓰레기 사진 분석 결과 dialog
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_detection_result, null);
+        ImageView imageView = dialogView.findViewById(R.id.result_image);
+        TextView textView = dialogView.findViewById(R.id.result_labels);
+
+        if (photo != null) imageView.setImageBitmap(photo);
+        if (labels == null || labels.isEmpty()) {
+            textView.setText("감지된 쓰레기 없음");
+        } else {
+            String text = "감지된 쓰레기: " + android.text.TextUtils.join(", ", labels);
+            textView.setText(text);
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("분석 결과")
+                .setView(dialogView)
+                .setPositiveButton("확인", null)
+                .show();
+    }
+
 
     private void resetTracking() {
         isRunning = false;
@@ -176,13 +239,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void launchCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (cameraIntent.resolveActivity(getPackageManager()) != null) {
-            cameraLauncher.launch(cameraIntent);
-        } else {
-            Toast.makeText(this, "카메라 실행 불가", Toast.LENGTH_SHORT).show();
+        try {
+            // 임시 이미지 파일 생성
+            photoFile = createImageFile();
+            if (photoFile != null) {
+                photoUri = FileProvider.getUriForFile(
+                        this,
+                        getApplicationContext().getPackageName() + ".provider",
+                        photoFile
+                );
+                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                cameraIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                cameraLauncher.launch(cameraIntent);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            Toast.makeText(this, "이미지 파일 생성 실패", Toast.LENGTH_SHORT).show();
         }
     }
+
+    // 임시 저장 파일 생성 함수
+    private File createImageFile() throws IOException {
+        String fileName = "plogging_photo_" + System.currentTimeMillis();
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return File.createTempFile(fileName, ".jpg", storageDir);
+    }
+
 
     private void checkAndMoveToCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
