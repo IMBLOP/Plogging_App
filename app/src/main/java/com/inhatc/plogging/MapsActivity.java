@@ -31,6 +31,10 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -67,6 +71,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private float totalDistance = 0f;
     private float avgSpeed = 0.0f;
     private Location lastLocation = null;
+    private SensorManager sensorManager;
+    private Sensor stepCounterSensor;
+    private SensorEventListener stepListener;
+    private int initialStepCount = -1; // 최초 걸음수 기억
+    private int sessionStepCount = 0; // 세션별 걸음수
+    private TextView tvStepCount; // 걸음수 표시용
 
     private Detector detector;
     private Bitmap lastCapturedBitmap = null;
@@ -177,6 +187,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        tvStepCount = findViewById(R.id.tv_step_count);
+
+        // 센서 초기화
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+
+        stepListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                if (initialStepCount == -1) {
+                    initialStepCount = (int) event.values[0]; // 앱 시작 시 최초값 저장
+                }
+                sessionStepCount = (int) event.values[0] - initialStepCount;
+                tvStepCount.setText("" + sessionStepCount);
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+        };
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (stepCounterSensor != null) {
+            sensorManager.registerListener(stepListener, stepCounterSensor, SensorManager.SENSOR_DELAY_UI);
+        }
+    }
+
+    // onPause에서 리스너 해제
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (stepCounterSensor != null) {
+            sensorManager.unregisterListener(stepListener);
+        }
     }
 
     private Uri saveBitmapToGallery(Bitmap bitmap) {
