@@ -226,27 +226,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/layout_upload_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/layout_buttons"
-        android:layout_marginBottom="8dp"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btn_upload"
-            android:layout_width="match_parent"
-            android:layout_margin="15dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/border_button"
-            android:backgroundTint="@android:color/transparent"
-            android:text="업로드"
-            android:textColor="@android:color/black"
-            android:visibility="gone" />
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/layout_buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

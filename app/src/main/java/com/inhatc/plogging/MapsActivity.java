@@ -6,6 +6,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.FragmentActivity;
+import androidx.room.Room;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
@@ -14,7 +16,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -25,6 +29,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,6 +58,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -235,33 +241,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private Uri saveBitmapToGallery(Bitmap bitmap) {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, "plogging_" + System.currentTimeMillis() + ".jpg");
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-        values.put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/Plogging"); // 갤러리 DCIM/Plogging 폴더
-
-        ContentResolver resolver = getContentResolver();
-        Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-        if (uri != null) {
-            try (OutputStream out = resolver.openOutputStream(uri)) {
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                return uri;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
-    }
-
-    private void showResultDialog(Bitmap photo, List<String> labels) { //쓰레기 사진 분석 결과 dialog
+    private void showResultDialog(Bitmap photo, List<String> labels) {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_detection_result, null);
         ImageView imageView = dialogView.findViewById(R.id.result_image);
         TextView textView = dialogView.findViewById(R.id.result_labels);
 
         if (photo != null) imageView.setImageBitmap(photo);
+
         if (labels == null || labels.isEmpty()) {
             textView.setText("감지된 쓰레기 없음");
         } else {
@@ -274,7 +260,56 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .setView(dialogView)
                 .setPositiveButton("확인", null)
                 .show();
+
+        if (photo != null && labels != null && !labels.isEmpty()) {
+            saveDetectionResult(photo, labels);
+        }
+        // 테스트 용
+//        Bitmap fakePhoto = textToBitmap("플라스틱 병", 400, 200);
+//        List<String> fakeList = Arrays.asList("플라스틱", "병");
+//        saveDetectionResult(fakePhoto, fakeList); // 임시 테스트용
     }
+
+    // 테스트 함수
+    public Bitmap textToBitmap(String text, int width, int height) {
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.WHITE);
+
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(40);
+        paint.setAntiAlias(true);
+
+        canvas.drawText(text, 50, height / 2, paint);
+
+        return bitmap;
+    }
+
+    private void saveDetectionResult(Bitmap photo, List<String> labels) {
+        // 1. Bitmap -> 내부 저장소에 파일로 저장
+        String fileName = "result_" + System.currentTimeMillis() + ".png";
+        File file = new File(getFilesDir(), fileName);
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            photo.compress(Bitmap.CompressFormat.PNG, 100, out);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        // 2. Room에 저장
+        DetectionResult result = new DetectionResult();
+        result.imagePath = file.getAbsolutePath();
+        result.labels = TextUtils.join(", ", labels);
+        result.timestamp = System.currentTimeMillis();
+
+        new Thread(() -> {
+            AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+                    AppDatabase.class, "app_db").build();
+            db.detectionResultDao().insert(result);
+        }).start();
+    }
+
 
 
     private void resetTracking() {

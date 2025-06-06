@@ -2,6 +2,8 @@ package com.inhatc.plogging;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +19,7 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.room.Room;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
@@ -24,13 +27,16 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class StatsFragment extends Fragment {
 
     private Button btnRecord;
-    private Button btnPlogging, btnUpload;
+    private Button btnPlogging;
     private View layoutDistance;
     private View gridPhotos;
     private SharedViewModel viewModel; // 데이터 저장
@@ -59,7 +65,6 @@ public class StatsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_stats, container, false);
 
         // 뷰 초기화
-        btnUpload = view.findViewById(R.id.btn_upload);
         btnRecord = view.findViewById(R.id.btn_record);
         btnPlogging = view.findViewById(R.id.btn_plogging);
         layoutDistance = view.findViewById(R.id.layout_distance_stats);
@@ -73,7 +78,6 @@ public class StatsFragment extends Fragment {
         // 초기 상태: 거리 통계 보여주기
         layoutDistance.setVisibility(View.VISIBLE);
         gridPhotos.setVisibility(View.GONE);
-        btnUpload.setVisibility(View.GONE);
 
         // 버튼 클릭 리스너 설정
         btnRecord.setOnClickListener(v -> showDistanceLayout());
@@ -81,15 +85,12 @@ public class StatsFragment extends Fragment {
 
         btnPlogging.setOnClickListener(v -> {
             showPhotoLayout();
-            btnUpload.setVisibility(View.VISIBLE);
         });
 
         btnRecord.setOnClickListener(v -> {
             showDistanceLayout();
-            btnUpload.setVisibility(View.GONE);
         });
 
-        btnUpload.setOnClickListener(v -> openGallery());
 
         viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         viewModel.getImageUris().observe(getViewLifecycleOwner(), uris -> {
@@ -123,51 +124,62 @@ public class StatsFragment extends Fragment {
 
     private GridLayout photoGrid;
 
-    // 이미지 표시구간 <- 모델 함수 넣으세요. 
     private void showPhotoLayout() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         layoutDistance.setVisibility(View.GONE);
         gridPhotos.setVisibility(View.VISIBLE);
         photoGrid.removeAllViews();
 
-        int count = 1;
-        for (Uri uri : imageList) {
-            LinearLayout itemLayout = new LinearLayout(getContext());
-            itemLayout.setOrientation(LinearLayout.VERTICAL);
+        new Thread(() -> {
+            AppDatabase db = Room.databaseBuilder(
+                    requireContext().getApplicationContext(),
+                    AppDatabase.class, "app_db"
+            ).build();
 
-            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-            params.width = 0;
-            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-            itemLayout.setLayoutParams(params);
-            
-            // 이미지 분석 <- 이미지 분석
-            ImageView imageView = new ImageView(getContext());
-            
-            imageView.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    600
-            ));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setImageURI(uri);
-            
-            TextView textView = new TextView(getContext());
-            textView.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            ));
-            // 모델결과 <- 이 부분에 모델결과 출력
-            textView.setText("분석 이미지 : " + String.valueOf(count));
-            textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            textView.setTextColor(Color.BLACK);
-            textView.setTextSize(16);
+            List<DetectionResult> results = db.detectionResultDao().getAll();
 
-            itemLayout.addView(imageView);
-            itemLayout.addView(textView);
+            requireActivity().runOnUiThread(() -> {
+                for (DetectionResult result : results) {
+                    LinearLayout itemLayout = new LinearLayout(getContext());
+                    itemLayout.setOrientation(LinearLayout.VERTICAL);
 
-            photoGrid.addView(itemLayout);
+                    GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+                    params.width = 0;
+                    params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                    params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+                    itemLayout.setLayoutParams(params);
 
-            count++;
-        }
+                    ImageView imageView = new ImageView(getContext());
+                    imageView.setLayoutParams(new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            600
+                    ));
+                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+                    // Bitmap 불러오기
+                    Bitmap bitmap = BitmapFactory.decodeFile(result.imagePath);
+                    if (bitmap != null) {
+                        imageView.setImageBitmap(bitmap);
+                    }
+
+                    TextView textView = new TextView(getContext());
+                    textView.setLayoutParams(new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    ));
+                    String formattedTime = sdf.format(new Date(result.timestamp));
+                    String labelText = "감지 결과: " + result.labels + "\n촬영시간: " + formattedTime;
+                    textView.setText(labelText);
+                    textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                    textView.setTextColor(Color.BLACK);
+                    textView.setTextSize(16);
+
+                    itemLayout.addView(imageView);
+                    itemLayout.addView(textView);
+                    photoGrid.addView(itemLayout);
+                }
+            });
+        }).start();
     }
 
 
@@ -238,11 +250,6 @@ public class StatsFragment extends Fragment {
         }
     }
 
-    private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, 1001);
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
