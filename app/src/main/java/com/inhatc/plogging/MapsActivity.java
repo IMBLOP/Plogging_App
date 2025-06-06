@@ -25,6 +25,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
@@ -104,6 +105,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 201);
+            }
+        }
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -191,12 +199,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         tvStepCount = findViewById(R.id.tv_step_count);
 
         // 센서 초기화
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensorManager = (SensorManager) this.getSystemService(Context.SENSOR_SERVICE);
         stepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
 
         stepListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
+                Log.d("MYDEBUG", "onSensorChanged 호출됨: " + event.values[0]);
                 if (initialStepCount == -1) {
                     initialStepCount = (int) event.values[0]; // 앱 시작 시 최초값 저장
                 }
