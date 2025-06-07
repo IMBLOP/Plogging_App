@@ -211,12 +211,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         stepListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                Log.d("MYDEBUG", "onSensorChanged 호출됨: " + event.values[0]);
                 if (initialStepCount == -1) {
-                    initialStepCount = (int) event.values[0]; // 앱 시작 시 최초값 저장
+                    initialStepCount = (int) event.values[0];
                 }
-                sessionStepCount = (int) event.values[0] - initialStepCount;
-                tvStepCount.setText("" + sessionStepCount);
+                // '달리기 중'일 때만 세션 걸음수 업데이트 및 표시
+                if (isRunning) {
+                    sessionStepCount = (int) event.values[0] - initialStepCount;
+                    tvStepCount.setText(String.valueOf(sessionStepCount));
+                }
             }
 
             @Override
@@ -316,6 +318,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         elapsedTime = 0L;
         lastLocation = null;
         polylinePath.clear();
+        sessionStepCount = 0;
 
         tvTime.setText("00:00.00");
         tvSpeend.setText("0.00 km/h");
@@ -325,6 +328,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if (polyline != null) {
             polyline.setPoints(new ArrayList<>());
+        }
+        if (tvStepCount != null) {
+            tvStepCount.setText("0");
         }
     }
 
