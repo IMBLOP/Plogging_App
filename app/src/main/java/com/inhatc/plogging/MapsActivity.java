@@ -618,8 +618,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private float calculateCalories(float distanceMeters, long durationMs) {
-        float weightKg = 65f; // 예시값, 유저 정보에 맞게 수정
-        float met = 8.0f; // 러닝 MET 값 예시
+        float weightKg = SharedPrefUtils.getWeight(this); // 프로필에서 읽어옴
+        float met = 8.0f; // MET 값(달리기 8~10, 빠른 걷기 4~5)
         float hours = durationMs / 1000f / 3600f;
         return met * weightKg * hours;
     }
