@@ -1,58 +1,38 @@
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/layout_buttons"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="130dp"
-            android:gravity="center"
-            android:orientation="horizontal">
+    <!-- 콘텐츠 영역: 기록 리스트 + 사진 그리드 -->
+    <LinearLayout
+        android:id="@+id/layout_main_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/layout_buttons"
+        android:layout_marginTop="30dp"
+        android:orientation="vertical">
 
-            <Button
-                android:id="@+id/btn_record"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="15dp"
-                android:layout_weight="1"
-                android:background="@drawable/border_button"
-                android:backgroundTint="@android:color/transparent"
-                android:text="기록"
-                android:textColor="@android:color/black" />
-
-            <Button
-                android:id="@+id/btn_plogging"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="15dp"
-                android:layout_weight="1"
-                android:background="@drawable/border_button"
-                android:backgroundTint="@android:color/transparent"
-                android:text="플로깅"
-                android:textColor="@android:color/black" />
-        </LinearLayout>
-
+        <!-- 기록 리스트 영역 -->
         <LinearLayout
             android:id="@+id/layout_run_records"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_run_records"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:paddingTop="30dp" />
         </LinearLayout>
 
+        <!-- 플로깅 사진 그리드 영역 -->
         <LinearLayout
             android:id="@+id/grid_photos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone">
+
             <GridLayout
                 android:id="@+id/photo_grid"
                 android:layout_width="match_parent"
@@ -61,5 +41,39 @@
                 android:orientation="horizontal"
                 android:useDefaultMargins="true" />
         </LinearLayout>
+    </LinearLayout>
+
+    <!-- 하단 버튼 영역 -->
+    <LinearLayout
+        android:id="@+id/layout_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="150dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <Button
+            android:id="@+id/btn_record"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_button"
+            android:backgroundTint="@android:color/transparent"
+            android:text="기록"
+            android:textColor="@android:color/black" />
+
+        <Button
+            android:id="@+id/btn_plogging"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/border_button"
+            android:backgroundTint="@android:color/transparent"
+            android:text="플로깅"
+            android:textColor="@android:color/black" />
     </LinearLayout>
 </RelativeLayout>
