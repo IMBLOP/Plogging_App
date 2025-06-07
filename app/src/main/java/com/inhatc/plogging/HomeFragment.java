@@ -1,11 +1,13 @@
 package com.inhatc.plogging;
 
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -31,6 +33,8 @@ public class HomeFragment extends Fragment {
     private Button btnNutrition;
     private LinearLayout cardBreakfast, cardLunch, cardDinner;
     private TextView tvBreakfastCal, tvLunchCal, tvDinnerCal;
+    private TextView tvUserName, tvUserInfo;
+    private LinearLayout profileLayout;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -50,7 +54,17 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        tvUserName = view.findViewById(R.id.tv_user_name);
+        tvUserInfo = view.findViewById(R.id.tv_user_info);
+        profileLayout = view.findViewById(R.id.profile_layout);
+
+        updateProfileViews();
+
+        profileLayout.setOnClickListener(v -> showProfileEditDialog());
+
         BarChart barChart = view.findViewById(R.id.bar_chart);
+        LinearLayout profileLayout = view.findViewById(R.id.profile_layout); // or img_user 등
+        profileLayout.setOnClickListener(v -> showProfileEditDialog());
 
         ArrayList<BarEntry> entries = new ArrayList<>();
         entries.add(new BarEntry(0, 2300)); // 월
@@ -151,4 +165,50 @@ public class HomeFragment extends Fragment {
             calText.setVisibility(View.VISIBLE);
         }
     }
+
+    private void showProfileEditDialog() {
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_profile, null);
+        EditText etName = dialogView.findViewById(R.id.et_name);
+        EditText etHeight = dialogView.findViewById(R.id.et_height);
+        EditText etWeight = dialogView.findViewById(R.id.et_weight);
+
+        // 현재 저장된 값 세팅
+        etName.setText(SharedPrefUtils.getName(getContext()));
+        etHeight.setText(String.valueOf(SharedPrefUtils.getHeight(getContext())));
+        etWeight.setText(String.valueOf(SharedPrefUtils.getWeight(getContext())));
+
+        new AlertDialog.Builder(getContext())
+                .setTitle("프로필 수정")
+                .setView(dialogView)
+                .setPositiveButton("저장", (dialog, which) -> {
+                    String name = etName.getText().toString();
+                    float height = parseFloat(etHeight.getText().toString(), 170f);
+                    float weight = parseFloat(etWeight.getText().toString(), 65f);
+
+                    SharedPrefUtils.setName(getContext(), name);
+                    SharedPrefUtils.setHeight(getContext(), height);
+                    SharedPrefUtils.setWeight(getContext(), weight);
+
+                    updateProfileViews(); // 뷰 갱신
+                })
+                .setNegativeButton("취소", null)
+                .show();
+    }
+
+    private float parseFloat(String s, float defaultVal) {
+        try { return Float.parseFloat(s); }
+        catch (Exception e) { return defaultVal; }
+    }
+
+    // SharedPreferences 값 → 화면 표시 함수
+    private void updateProfileViews() {
+        if(tvUserName != null && tvUserInfo != null) {
+            String name = SharedPrefUtils.getName(getContext());
+            float height = SharedPrefUtils.getHeight(getContext());
+            float weight = SharedPrefUtils.getWeight(getContext());
+            tvUserName.setText(name);
+            tvUserInfo.setText("키 " + height + "cm  몸무게 " + weight + "kg");
+        }
+    }
+
 }

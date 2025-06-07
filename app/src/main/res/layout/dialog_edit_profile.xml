@@ -1,0 +1,19 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="24dp"
+    android:orientation="vertical"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+    <EditText
+        android:id="@+id/et_name"
+        android:hint="이름"
+        android:layout_width="match_parent" android:layout_height="wrap_content" />
+    <EditText
+        android:id="@+id/et_height"
+        android:hint="키 (cm)"
+        android:inputType="numberDecimal"
+        android:layout_width="match_parent" android:layout_height="wrap_content" />
+    <EditText
+        android:id="@+id/et_weight"
+        android:hint="몸무게 (kg)"
+        android:inputType="numberDecimal"
+        android:layout_width="match_parent" android:layout_height="wrap_content" />
+</LinearLayout>

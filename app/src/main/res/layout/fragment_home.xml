@@ -7,6 +7,7 @@
 
     <!-- 사용자 프로필 영역 -->
     <LinearLayout
+        android:id="@+id/profile_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -34,7 +35,6 @@
                 android:id="@+id/tv_user_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="홍길동"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -42,15 +42,6 @@
                 android:id="@+id/tv_user_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="키 175cm  몸무게 68kg"
-                android:textColor="#666"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/tv_user_point"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="점수 : 3500"
                 android:textColor="#666"
                 android:textSize="14sp" />
 
