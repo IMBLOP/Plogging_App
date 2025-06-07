@@ -255,19 +255,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             textView.setText(text);
         }
 
-        new AlertDialog.Builder(this)
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
                 .setTitle("분석 결과")
                 .setView(dialogView)
-                .setPositiveButton("확인", null)
-                .show();
+                .setPositiveButton("확인", (dialog, which) -> {
+                    // "확인"을 눌렀을 때만 저장
+                    if (photo != null && labels != null && !labels.isEmpty()) {
+                        saveDetectionResult(photo, labels);
+                    }
+                })
+                .setNegativeButton("취소", null);  // "취소"를 누르면 아무 동작 없이 닫힘
 
-        if (photo != null && labels != null && !labels.isEmpty()) {
-            saveDetectionResult(photo, labels);
-        }
-        // 테스트 용
-//        Bitmap fakePhoto = textToBitmap("플라스틱 병", 400, 200);
-//        List<String> fakeList = Arrays.asList("플라스틱", "병");
-//        saveDetectionResult(fakePhoto, fakeList); // 임시 테스트용
+        builder.show();
     }
 
     // 테스트 함수

@@ -1,6 +1,7 @@
 package com.inhatc.plogging;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,6 +28,7 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -161,6 +163,26 @@ public class StatsFragment extends Fragment {
                     if (bitmap != null) {
                         imageView.setImageBitmap(bitmap);
                     }
+
+                    itemLayout.setOnLongClickListener(v -> {
+                        new AlertDialog.Builder(getContext())
+                                .setTitle("삭제 확인")
+                                .setMessage("이 사진 기록을 삭제할까요?")
+                                .setPositiveButton("삭제", (dialog, which) -> {
+                                    // DB 삭제 + 파일 삭제
+                                    new Thread(() -> {
+                                        db.detectionResultDao().deleteById(result.id);
+                                        // 이미지 파일 삭제
+                                        File imgFile = new File(result.imagePath);
+                                        if (imgFile.exists()) imgFile.delete();
+                                        // UI 갱신
+                                        requireActivity().runOnUiThread(this::showPhotoLayout);
+                                    }).start();
+                                })
+                                .setNegativeButton("취소", null)
+                                .show();
+                        return true;
+                    });
 
                     TextView textView = new TextView(getContext());
                     textView.setLayoutParams(new LinearLayout.LayoutParams(

@@ -13,4 +13,8 @@ public interface DetectionResultDao {
 
     @Query("SELECT * FROM detection_results ORDER BY timestamp DESC")
     List<DetectionResult> getAll();
+
+    @Query("DELETE FROM detection_results WHERE id = :id")
+    void deleteById(int id);
 }
+
