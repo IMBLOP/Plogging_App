@@ -84,6 +84,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int initialStepCount = -1; // 최초 걸음수 기억
     private int sessionStepCount = 0; // 세션별 걸음수
     private TextView tvStepCount; // 걸음수 표시용
+    private static final float MIN_ACCURACY = 25f;    // 정확도(미터)
+    private static final float MIN_DISTANCE = 3f;     // 이동 최소거리(미터)
+    private static final float MAX_DISTANCE = 50f;    // 이동 최대거리(미터)
 
     private Detector detector;
     private Bitmap lastCapturedBitmap = null;
@@ -251,14 +254,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (photo != null) imageView.setImageBitmap(photo);
 
         if (labels == null || labels.isEmpty()) {
-            textView.setText("감지된 쓰레기 없음");
+            textView.setText("쓰레기를 못 찾겠어요");
         } else {
-            String text = "감지된 쓰레기: " + android.text.TextUtils.join(", ", labels);
+            String text = "" + android.text.TextUtils.join(", ", labels);
             textView.setText(text);
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setTitle("분석 결과")
+                .setTitle("발견한 쓰레기")
                 .setView(dialogView)
                 .setPositiveButton("확인", (dialog, which) -> {
                     // "확인"을 눌렀을 때만 저장
@@ -432,6 +435,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void updateMap(Location location) {
+        // 1. 정확도 기준 필터링
+        if (location.getAccuracy() > MIN_ACCURACY) {
+            return; // 정확도가 너무 낮으면 무시
+        }
+
+        // 2. 거리 변화 기준 필터링
+        if (lastLocation != null) {
+            float distance = lastLocation.distanceTo(location);
+
+            if (distance < MIN_DISTANCE) {
+                return; // GPS 미세 흔들림(노이즈) 무시
+            }
+
+            if (distance > MAX_DISTANCE) {
+                return; // 튀는 값 무시 (예: 지하철, 터널, 일시적 GPS 오류 등)
+            }
+            totalDistance += distance;
+        }
+        lastLocation = location;
+
         objLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
         if (isFirstLocation || isCameraTracking) {
@@ -439,15 +462,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             isFirstLocation = false;
         }
 
-        if (lastLocation != null && isRunning) {
-            float distance = lastLocation.distanceTo(location);
-            totalDistance += distance;
-        }
-        lastLocation = location;
-
         if (isRunning) {
             avgSpeed = (elapsedTime > 0) ? (totalDistance / (elapsedTime / 1000f)) * 3.6f : 0f;
-
             polylinePath.add(objLocation);
             polyline.setPoints(polylinePath);
         } else {
