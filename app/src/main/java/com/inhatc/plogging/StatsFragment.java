@@ -93,10 +93,19 @@ public class StatsFragment extends Fragment {
 
     private void loadRunRecords() {
         new Thread(() -> {
-            AppDatabase db = Room.databaseBuilder(requireContext().getApplicationContext(),
-                    AppDatabase.class, "app_db").build();
-            List<RunRecord> runList = db.runRecordDao().getAll();
-            requireActivity().runOnUiThread(() -> runAdapter.setRunRecords(runList));
+            try {
+                AppDatabase db = Room.databaseBuilder(
+                        requireContext().getApplicationContext(),
+                        AppDatabase.class,
+                        "app_db"
+                ).build();
+                List<RunRecord> runList = db.runRecordDao().getAll();
+                requireActivity().runOnUiThread(() -> {
+                    if (runList != null) runAdapter.setRunRecords(runList);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -105,65 +114,80 @@ public class StatsFragment extends Fragment {
         photoGrid.removeAllViews();
 
         new Thread(() -> {
-            AppDatabase db = Room.databaseBuilder(
-                    requireContext().getApplicationContext(),
-                    AppDatabase.class, "app_db"
-            ).build();
-            List<DetectionResult> results = db.detectionResultDao().getAll();
+            try {
+                AppDatabase db = Room.databaseBuilder(
+                        requireContext().getApplicationContext(),
+                        AppDatabase.class,
+                        "app_db"
+                ).build();
+                List<DetectionResult> results = db.detectionResultDao().getAll();
 
-            requireActivity().runOnUiThread(() -> {
-                for (DetectionResult result : results) {
-                    LinearLayout itemLayout = new LinearLayout(getContext());
-                    itemLayout.setOrientation(LinearLayout.VERTICAL);
+                requireActivity().runOnUiThread(() -> {
+                    for (DetectionResult result : results) {
+                        try {
+                            LinearLayout itemLayout = new LinearLayout(getContext());
+                            itemLayout.setOrientation(LinearLayout.VERTICAL);
+                            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+                            params.width = 0;
+                            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+                            itemLayout.setLayoutParams(params);
 
-                    GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-                    params.width = 0;
-                    params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                    params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-                    itemLayout.setLayoutParams(params);
+                            ImageView imageView = new ImageView(getContext());
+                            imageView.setLayoutParams(new LinearLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT, 600));
+                            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-                    ImageView imageView = new ImageView(getContext());
-                    imageView.setLayoutParams(new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT, 600
-                    ));
-                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                            Bitmap bitmap = BitmapFactory.decodeFile(result.imagePath);
+                            if (bitmap != null) {
+                                imageView.setImageBitmap(bitmap);
+                            }
 
-                    Bitmap bitmap = BitmapFactory.decodeFile(result.imagePath);
-                    if (bitmap != null) imageView.setImageBitmap(bitmap);
+                            itemLayout.setOnLongClickListener(v -> {
+                                new AlertDialog.Builder(getContext())
+                                        .setTitle("삭제 확인")
+                                        .setMessage("이 사진 기록을 삭제할까요?")
+                                        .setPositiveButton("삭제", (dialog, which) -> {
+                                            new Thread(() -> {
+                                                try {
+                                                    db.detectionResultDao().deleteById(result.id);
+                                                    File imgFile = new File(result.imagePath);
+                                                    if (imgFile.exists()) imgFile.delete();
+                                                    requireActivity().runOnUiThread(this::showPhotoLayout);
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }).start();
+                                        })
+                                        .setNegativeButton("취소", null)
+                                        .show();
+                                return true;
+                            });
 
-                    itemLayout.setOnLongClickListener(v -> {
-                        new AlertDialog.Builder(getContext())
-                                .setTitle("삭제 확인")
-                                .setMessage("이 사진 기록을 삭제할까요?")
-                                .setPositiveButton("삭제", (dialog, which) -> {
-                                    new Thread(() -> {
-                                        db.detectionResultDao().deleteById(result.id);
-                                        File imgFile = new File(result.imagePath);
-                                        if (imgFile.exists()) imgFile.delete();
-                                        requireActivity().runOnUiThread(this::showPhotoLayout);
-                                    }).start();
-                                })
-                                .setNegativeButton("취소", null)
-                                .show();
-                        return true;
-                    });
+                            TextView textView = new TextView(getContext());
+                            textView.setLayoutParams(new LinearLayout.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT));
+                            String formattedTime = sdf.format(new Date(result.timestamp));
+                            String labelText = "감지 결과: " + result.labels + "\n촬영시간: " + formattedTime;
+                            textView.setText(labelText);
+                            textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                            textView.setTextColor(Color.BLACK);
+                            textView.setTextSize(16);
 
-                    TextView textView = new TextView(getContext());
-                    textView.setLayoutParams(new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-                    ));
-                    String formattedTime = sdf.format(new Date(result.timestamp));
-                    String labelText = "감지 결과: " + result.labels + "\n촬영시간: " + formattedTime;
-                    textView.setText(labelText);
-                    textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                    textView.setTextColor(Color.BLACK);
-                    textView.setTextSize(16);
+                            itemLayout.addView(imageView);
+                            itemLayout.addView(textView);
+                            photoGrid.addView(itemLayout);
 
-                    itemLayout.addView(imageView);
-                    itemLayout.addView(textView);
-                    photoGrid.addView(itemLayout);
-                }
-            });
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 }
+
