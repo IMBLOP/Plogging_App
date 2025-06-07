@@ -536,13 +536,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         handler.removeCallbacks(timerRunnable);
         btnToggle.setBackgroundResource(R.drawable.start2);
 
-        saveRouteImage(polylinePath, mMap, new SaveImageCallback() {
-            @Override
-            public void onSave(String imagePath) {
-                saveRunRecord(imagePath);
-                runOnUiThread(() -> resetTracking());
-            }
-        });
+        if (polylinePath.size() > 1) {
+            saveRouteImage(polylinePath, mMap, new SaveImageCallback() {
+                @Override
+                public void onSave(String imagePath) {
+                    if (imagePath != null) {
+                        saveRunRecord(imagePath);
+                    } else {
+                        runOnUiThread(() ->
+                                Toast.makeText(MapsActivity.this, "경로 이미지 저장 실패, 기록이 저장되지 않습니다.", Toast.LENGTH_SHORT).show()
+                        );
+                    }
+                    runOnUiThread(() -> resetTracking());
+                }
+            });
+        } else {
+            Toast.makeText(this, "이동한 경로가 없어 기록이 저장되지 않습니다.", Toast.LENGTH_SHORT).show();
+            resetTracking();
+        }
     }
 
 

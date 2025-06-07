@@ -18,6 +18,14 @@ import java.util.Date;
 
 public class RunRecordAdapter extends RecyclerView.Adapter<RunRecordAdapter.RunViewHolder> {
     private List<RunRecord> runRecords;
+    private OnItemLongClickListener longClickListener;
+
+    public interface OnItemLongClickListener {
+        void onItemLongClick(RunRecord record, int position);
+    }
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        this.longClickListener = listener;
+    }
 
     public RunRecordAdapter(List<RunRecord> records) {
         this.runRecords = records;
@@ -57,11 +65,23 @@ public class RunRecordAdapter extends RecyclerView.Adapter<RunRecordAdapter.RunV
         holder.tvSpeed.setText(String.format(Locale.getDefault(), "평균 속도: %.1fkm/h", record.avgSpeed));
         // 칼로리
         holder.tvCalories.setText(String.format(Locale.getDefault(), "칼로리: %.0f kcal", record.calories));
+
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onItemLongClick(record, position);
+            }
+            return true;
+        });
     }
 
     @Override
     public int getItemCount() {
         return runRecords != null ? runRecords.size() : 0;
+    }
+
+    public void removeAt(int position) {
+        runRecords.remove(position);
+        notifyItemRemoved(position);
     }
 
     static class RunViewHolder extends RecyclerView.ViewHolder {

@@ -33,6 +33,8 @@ public class StatsFragment extends Fragment {
         gridPhotos = view.findViewById(R.id.grid_photos);
         photoGrid = view.findViewById(R.id.photo_grid);
         rvRunRecords = view.findViewById(R.id.rv_run_records);
+        runAdapter = new RunRecordAdapter(new ArrayList<>());
+        rvRunRecords.setAdapter(runAdapter);
 
         // 초기화: 기록 리스트 보이기, 플로깅 그리드는 숨김
         layoutRunRecords.setVisibility(View.VISIBLE);
@@ -55,6 +57,32 @@ public class StatsFragment extends Fragment {
             layoutRunRecords.setVisibility(View.GONE);
             gridPhotos.setVisibility(View.VISIBLE);
             showPhotoLayout();
+        });
+
+        runAdapter.setOnItemLongClickListener((record, pos) -> {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("삭제 확인")
+                    .setMessage("이 조깅 기록을 삭제할까요?")
+                    .setPositiveButton("삭제", (dialog, which) -> {
+                        new Thread(() -> {
+                            AppDatabase db = Room.databaseBuilder(
+                                    requireContext().getApplicationContext(),
+                                    AppDatabase.class, "app_db"
+                            ).build();
+                            db.runRecordDao().deleteById(record.id);
+
+                            // 경로 이미지 파일도 삭제
+                            File imgFile = new File(record.routeImagePath);
+                            if (imgFile.exists()) imgFile.delete();
+
+                            requireActivity().runOnUiThread(() -> {
+                                // adapter에서 바로 삭제(새로고침)
+                                runAdapter.removeAt(pos); // removeAt 메서드 구현 필요
+                            });
+                        }).start();
+                    })
+                    .setNegativeButton("취소", null)
+                    .show();
         });
 
         // 시작 시 기록 리스트 로드

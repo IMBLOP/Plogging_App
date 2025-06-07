@@ -12,4 +12,7 @@ public interface RunRecordDao {
 
     @Query("SELECT * FROM run_records ORDER BY timestamp DESC")
     List<RunRecord> getAll();
+
+    @Query("DELETE FROM run_records WHERE id = :id")
+    void deleteById(int id);
 }
