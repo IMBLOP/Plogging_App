@@ -48,6 +48,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
@@ -72,7 +73,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Handler handler = new Handler();
     private Runnable timerRunnable;
 
-    private ImageButton btnToggle, btnReset, btnBack, btnCamera, btnMyLocation;
+    private ImageButton btnToggle, btnBack, btnCamera, btnMyLocation;
     private TextView tvTime, tvSpeend, tvDistance;
     private long elapsedTime = 0L;
     private float totalDistance = 0f;
@@ -154,14 +155,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         btnToggle = findViewById(R.id.btn_toggle);
-        btnReset = findViewById(R.id.btn_reset);
         btnMyLocation = findViewById(R.id.btn_my_location);
         tvTime = findViewById(R.id.tv_time);
         tvSpeend = findViewById(R.id.tv_speed);
         tvDistance = findViewById(R.id.tv_distance);
 
         btnToggle.setOnClickListener(v -> toggleRunState());
-        btnReset.setOnClickListener(v -> resetTracking());
 
         btnBack = findViewById(R.id.btn_back);
         btnBack.setOnClickListener(v -> onBackPressed());
@@ -317,25 +316,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     private void resetTracking() {
-        isRunning = false;
         elapsedTime = 0L;
         lastLocation = null;
-        polylinePath.clear();
+        totalDistance = 0f;
+        avgSpeed = 0f;
+        initialStepCount = -1;
         sessionStepCount = 0;
 
+        polylinePath.clear();
         tvTime.setText("00:00.00");
         tvSpeend.setText("0.00 km/h");
-
-        handler.removeCallbacks(timerRunnable);
-        btnToggle.setBackgroundResource(R.drawable.start2);
+        tvDistance.setText("0.00 km");
+        tvStepCount.setText("0");
 
         if (polyline != null) {
             polyline.setPoints(new ArrayList<>());
         }
-        if (tvStepCount != null) {
-            tvStepCount.setText("0");
-        }
     }
+
 
     private void launchCamera() {
         try {
@@ -491,31 +489,128 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void toggleRunState() {
         if (!isRunning) {
-            isRunning = true;
-            startTime = System.currentTimeMillis() - elapsedTime;
-            btnToggle.setBackgroundResource(R.drawable.stop2);
-
-            timerRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    elapsedTime = System.currentTimeMillis() - startTime;
-
-                    int minutes = (int) (elapsedTime / 1000) / 60;
-                    int seconds = (int) (elapsedTime / 1000) % 60;
-                    int hundredths = (int) (elapsedTime % 1000) / 10;
-
-                    String time = String.format(Locale.getDefault(), "%02d:%02d.%02d", minutes, seconds, hundredths);
-                    tvTime.setText(time);
-
-                    handler.postDelayed(this, 10);
-                }
-            };
-            handler.post(timerRunnable);
+            new AlertDialog.Builder(this)
+                    .setTitle("Start Running!")
+                    .setMessage("충분히 몸을 풀고\n달리기를 시작하세요!")
+                    .setPositiveButton("시작", (dialog, which) -> {
+                        startRunning();
+                    })
+                    .setNegativeButton("취소", null)
+                    .show();
         } else {
-            isRunning = false;
-            handler.removeCallbacks(timerRunnable);
-            btnToggle.setBackgroundResource(R.drawable.start2);
+            new AlertDialog.Builder(this)
+                    .setTitle("Stop Running")
+                    .setMessage("달리기를 종료할까요?\n기록이 저장됩니다.")
+                    .setPositiveButton("종료", (dialog, which) -> {
+                        stopRunningAndSave();
+                    })
+                    .setNegativeButton("계속", null)
+                    .show();
         }
+    }
+
+    private void startRunning() {
+        isRunning = true;
+        startTime = System.currentTimeMillis() - elapsedTime;
+        btnToggle.setBackgroundResource(R.drawable.stop2);
+        timerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                elapsedTime = System.currentTimeMillis() - startTime;
+
+                int minutes = (int) (elapsedTime / 1000) / 60;
+                int seconds = (int) (elapsedTime / 1000) % 60;
+                int hundredths = (int) (elapsedTime % 1000) / 10;
+
+                String time = String.format(Locale.getDefault(), "%02d:%02d.%02d", minutes, seconds, hundredths);
+                tvTime.setText(time);
+
+                handler.postDelayed(this, 10);
+            }
+        };
+        handler.post(timerRunnable);
+    }
+
+    private void stopRunningAndSave() {
+        isRunning = false;
+        handler.removeCallbacks(timerRunnable);
+        btnToggle.setBackgroundResource(R.drawable.start2);
+
+        saveRouteImage(polylinePath, mMap, new SaveImageCallback() {
+            @Override
+            public void onSave(String imagePath) {
+                saveRunRecord(imagePath);
+                runOnUiThread(() -> resetTracking());
+            }
+        });
+    }
+
+
+    private void saveRouteImage(List<LatLng> polylinePath, GoogleMap mMap, SaveImageCallback callback) {
+        if (polylinePath == null || polylinePath.isEmpty() || mMap == null) {
+            callback.onSave(null);
+            return;
+        }
+
+        // 1. 전체 경로가 들어가도록 LatLngBounds 구함
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (LatLng latLng : polylinePath) {
+            builder.include(latLng);
+        }
+        LatLngBounds bounds = builder.build();
+
+        // 2. 카메라를 전체 경로가 다 나오도록 이동 (패딩 100px)
+        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
+
+        // 3. 지도 캡처 (snapshot은 비동기이므로 콜백)
+        mMap.snapshot(bitmap -> {
+            if (bitmap == null) {
+                callback.onSave(null);
+                return;
+            }
+            // 4. 비트맵을 파일로 저장
+            String fileName = "route_" + System.currentTimeMillis() + ".png";
+            File file = new File(getFilesDir(), fileName);
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                out.flush();
+                Log.d("MapsActivity", "경로 이미지 저장됨: " + file.getAbsolutePath());
+                callback.onSave(file.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
+                callback.onSave(null);
+            }
+        });
+    }
+
+    // 이미지 저장 후 결과를 받기 위한 콜백 인터페이스
+    public interface SaveImageCallback {
+        void onSave(String imagePath);
+    }
+
+    private void saveRunRecord(String imagePath) {
+        RunRecord record = new RunRecord();
+        record.routeImagePath = imagePath;
+        record.steps = sessionStepCount;
+        record.avgSpeed = avgSpeed;
+        record.calories = calculateCalories(totalDistance, elapsedTime);
+        record.distance = totalDistance;
+        record.duration = elapsedTime;
+        record.timestamp = System.currentTimeMillis();
+
+        new Thread(() -> {
+            AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+                    AppDatabase.class, "app_db").build();
+            db.runRecordDao().insert(record);
+            Log.d("MapsActivity", "RunRecord 저장 완료");
+        }).start();
+    }
+
+    private float calculateCalories(float distanceMeters, long durationMs) {
+        float weightKg = 65f; // 예시값, 유저 정보에 맞게 수정
+        float met = 8.0f; // 러닝 MET 값 예시
+        float hours = durationMs / 1000f / 3600f;
+        return met * weightKg * hours;
     }
 
     private Uri saveBitmapAndGetUri(Bitmap bitmap) {

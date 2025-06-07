@@ -1,135 +1,79 @@
 package com.inhatc.plogging;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.GridLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
+import android.view.*;
+import android.widget.*;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
-
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class StatsFragment extends Fragment {
 
-    private Button btnRecord;
-    private Button btnPlogging;
-    private View layoutDistance;
-    private View gridPhotos;
-    private SharedViewModel viewModel; // 데이터 저장
-
-    private PieChart pieChartDaily, pieChartWeekly, pieChartMonthly;
-    private final List<Uri> imageList = new ArrayList<>();
-
-
-
-    public StatsFragment() {
-        // 기본 생성자
-    }
-
-    public static StatsFragment newInstance(String param1, String param2) {
-        StatsFragment fragment = new StatsFragment();
-        Bundle args = new Bundle();
-        args.putString("param1", param1);
-        args.putString("param2", param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private Button btnRecord, btnPlogging;
+    private LinearLayout layoutRunRecords, gridPhotos;
+    private GridLayout photoGrid;
+    private RecyclerView rvRunRecords;
+    private RunRecordAdapter runAdapter;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_stats, container, false);
 
-        // 뷰 초기화
         btnRecord = view.findViewById(R.id.btn_record);
         btnPlogging = view.findViewById(R.id.btn_plogging);
-        layoutDistance = view.findViewById(R.id.layout_distance_stats);
+        layoutRunRecords = view.findViewById(R.id.layout_run_records); // RecyclerView 포함 LinearLayout
         gridPhotos = view.findViewById(R.id.grid_photos);
         photoGrid = view.findViewById(R.id.photo_grid);
+        rvRunRecords = view.findViewById(R.id.rv_run_records);
 
-        pieChartDaily = view.findViewById(R.id.pie_chart_daily);
-        pieChartWeekly = view.findViewById(R.id.pie_chart_weekly);
-        pieChartMonthly = view.findViewById(R.id.pie_chart_monthly);
-
-        // 초기 상태: 거리 통계 보여주기
-        layoutDistance.setVisibility(View.VISIBLE);
+        // 초기화: 기록 리스트 보이기, 플로깅 그리드는 숨김
+        layoutRunRecords.setVisibility(View.VISIBLE);
         gridPhotos.setVisibility(View.GONE);
 
-        // 버튼 클릭 리스너 설정
-        btnRecord.setOnClickListener(v -> showDistanceLayout());
-        btnPlogging.setOnClickListener(v -> showPhotoLayout());
+        // RecyclerView 세팅
+        rvRunRecords.setLayoutManager(new LinearLayoutManager(getContext()));
+        runAdapter = new RunRecordAdapter(new ArrayList<>());
+        rvRunRecords.setAdapter(runAdapter);
 
-        btnPlogging.setOnClickListener(v -> {
-            showPhotoLayout();
-        });
-
+        // "기록" 버튼 → 기록(RecyclerView) 보이기
         btnRecord.setOnClickListener(v -> {
-            showDistanceLayout();
+            layoutRunRecords.setVisibility(View.VISIBLE);
+            gridPhotos.setVisibility(View.GONE);
+            loadRunRecords();
         });
 
-
-        viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-        viewModel.getImageUris().observe(getViewLifecycleOwner(), uris -> {
-            imageList.clear();
-            imageList.addAll(uris);
-            if (gridPhotos.getVisibility() == View.VISIBLE) {
-                showPhotoLayout();
-            }
-        });
-
-        // 원형 그래프 초기화 및 샘플 데이터 세팅
-        setupPieChart(pieChartDaily);
-        setupPieChart(pieChartWeekly);
-        setupPieChart(pieChartMonthly);
-
-        setPieChartDataByValues(pieChartDaily, 5f, 3f);
-        setPieChartDataByValues(pieChartWeekly, 35f, 25f);
-        setPieChartDataByValues(pieChartMonthly, 150f, 120f);
-
-        if (!imageList.isEmpty()) {
+        // "플로깅" 버튼 → 플로깅(사진 그리드) 보이기
+        btnPlogging.setOnClickListener(v -> {
+            layoutRunRecords.setVisibility(View.GONE);
+            gridPhotos.setVisibility(View.VISIBLE);
             showPhotoLayout();
-        }
+        });
+
+        // 시작 시 기록 리스트 로드
+        loadRunRecords();
 
         return view;
     }
 
-    private void showDistanceLayout() {
-        layoutDistance.setVisibility(View.VISIBLE);
-        gridPhotos.setVisibility(View.GONE);
+    private void loadRunRecords() {
+        new Thread(() -> {
+            AppDatabase db = Room.databaseBuilder(requireContext().getApplicationContext(),
+                    AppDatabase.class, "app_db").build();
+            List<RunRecord> runList = db.runRecordDao().getAll();
+            requireActivity().runOnUiThread(() -> runAdapter.setRunRecords(runList));
+        }).start();
     }
-
-    private GridLayout photoGrid;
 
     private void showPhotoLayout() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        layoutDistance.setVisibility(View.GONE);
-        gridPhotos.setVisibility(View.VISIBLE);
         photoGrid.removeAllViews();
 
         new Thread(() -> {
@@ -137,7 +81,6 @@ public class StatsFragment extends Fragment {
                     requireContext().getApplicationContext(),
                     AppDatabase.class, "app_db"
             ).build();
-
             List<DetectionResult> results = db.detectionResultDao().getAll();
 
             requireActivity().runOnUiThread(() -> {
@@ -153,29 +96,22 @@ public class StatsFragment extends Fragment {
 
                     ImageView imageView = new ImageView(getContext());
                     imageView.setLayoutParams(new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            600
+                            ViewGroup.LayoutParams.MATCH_PARENT, 600
                     ));
                     imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
-                    // Bitmap 불러오기
                     Bitmap bitmap = BitmapFactory.decodeFile(result.imagePath);
-                    if (bitmap != null) {
-                        imageView.setImageBitmap(bitmap);
-                    }
+                    if (bitmap != null) imageView.setImageBitmap(bitmap);
 
                     itemLayout.setOnLongClickListener(v -> {
                         new AlertDialog.Builder(getContext())
                                 .setTitle("삭제 확인")
                                 .setMessage("이 사진 기록을 삭제할까요?")
                                 .setPositiveButton("삭제", (dialog, which) -> {
-                                    // DB 삭제 + 파일 삭제
                                     new Thread(() -> {
                                         db.detectionResultDao().deleteById(result.id);
-                                        // 이미지 파일 삭제
                                         File imgFile = new File(result.imagePath);
                                         if (imgFile.exists()) imgFile.delete();
-                                        // UI 갱신
                                         requireActivity().runOnUiThread(this::showPhotoLayout);
                                     }).start();
                                 })
@@ -186,8 +122,7 @@ public class StatsFragment extends Fragment {
 
                     TextView textView = new TextView(getContext());
                     textView.setLayoutParams(new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
                     ));
                     String formattedTime = sdf.format(new Date(result.timestamp));
                     String labelText = "감지 결과: " + result.labels + "\n촬영시간: " + formattedTime;
@@ -203,85 +138,4 @@ public class StatsFragment extends Fragment {
             });
         }).start();
     }
-
-
-    private void setupPieChart(PieChart chart) {
-        chart.setUsePercentValues(true);
-        chart.getDescription().setEnabled(false);
-        chart.setDrawHoleEnabled(true);
-        chart.setHoleColor(Color.WHITE);
-        chart.setHoleRadius(58f);
-        chart.setTransparentCircleRadius(61f);
-        chart.setRotationEnabled(false);
-        chart.setHighlightPerTapEnabled(true);
-
-        Legend legend = chart.getLegend();
-        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
-        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-        legend.setDrawInside(false);
-        legend.setEnabled(true);
-
-        chart.setEntryLabelColor(Color.TRANSPARENT);
-        chart.setDrawEntryLabels(false);
-    }
-
-    private void setPieChartData(PieChart chart, float[] values, String[] labels) {
-        List<PieEntry> entries = new ArrayList<>();
-        float total = 0f;
-        for (float v : values) total += v;
-
-        for (int i = 0; i < values.length; i++) {
-            entries.add(new PieEntry(values[i], labels[i]));
-        }
-
-        PieDataSet dataSet = new PieDataSet(entries, "");
-        dataSet.setSliceSpace(3f);
-        dataSet.setSelectionShift(5f);
-
-        int colorMoving = Color.parseColor("#954AE4"); // 보라색
-        int colorGoal = Color.parseColor("#BFFD9F");   // 연두색
-        dataSet.setColors(colorMoving, colorGoal);
-
-        PieData data = new PieData(dataSet);
-        data.setDrawValues(false);  // 숫자 텍스트 숨김
-
-        chart.setData(data);
-
-        // 예: 첫번째 값이 진행도라고 가정
-        int progressPercent = Math.round(values[0] / total * 100);
-        chart.setCenterText(progressPercent + "%");
-        chart.setCenterTextSize(24f);
-        chart.setCenterTextColor(Color.BLACK);
-
-        chart.invalidate();
-    }
-
-    private void setPieChartDataByValues(PieChart chart, float target, float achieved) {
-        float total = target > 0 ? target : achieved;
-        float percentAchieved = (achieved / total) * 100f;
-        float percentRemaining = 100f - percentAchieved;
-
-        // labels 순서: 도달 거리, 목표 거리(남은 거리)
-        setPieChartData(chart, new float[]{percentAchieved, percentRemaining}, new String[]{"도달 거리", "목표 거리"});
-    }
-
-    public void receiveImage(Uri imageUri) {
-        if (imageUri != null) {
-            viewModel.addImageUri(imageUri);
-        }
-    }
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1001 && resultCode == Activity.RESULT_OK) {
-            if (data != null) {
-                Uri selectedImageUri = data.getData();
-                receiveImage(selectedImageUri);
-            }
-        }
-    }
-
 }
