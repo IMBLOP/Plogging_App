@@ -33,13 +33,19 @@
             android:orientation="vertical"
             android:visibility="gone">
 
-            <GridLayout
-                android:id="@+id/photo_grid"
+            <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:columnCount="2"
-                android:orientation="horizontal"
-                android:useDefaultMargins="true" />
+                android:fillViewport="true">
+
+                <GridLayout
+                    android:id="@+id/photo_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:orientation="horizontal"
+                    android:useDefaultMargins="true" />
+            </ScrollView>
         </LinearLayout>
     </LinearLayout>
 
