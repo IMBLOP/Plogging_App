@@ -66,10 +66,11 @@
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:layout_weight="1"
-            android:background="@drawable/border_button"
+            android:background="@drawable/btn_border"
             android:backgroundTint="@android:color/transparent"
+            android:textStyle="bold"
             android:text="기록"
-            android:textColor="@android:color/black" />
+            android:textColor="@android:color/white" />
 
         <Button
             android:id="@+id/btn_plogging"
@@ -77,9 +78,10 @@
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:layout_weight="1"
-            android:background="@drawable/border_button"
+            android:background="@drawable/btn_border"
             android:backgroundTint="@android:color/transparent"
+            android:textStyle="bold"
             android:text="플로깅"
-            android:textColor="@android:color/black" />
+            android:textColor="@android:color/white" />
     </LinearLayout>
 </RelativeLayout>

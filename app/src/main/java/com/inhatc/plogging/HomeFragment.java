@@ -76,8 +76,7 @@ public class HomeFragment extends Fragment {
         entries.add(new BarEntry(6, 0)); // 일
 
         BarDataSet dataSet = new BarDataSet(entries, "소비 칼로리 (kcal)");
-        dataSet.setColor(getResources().getColor(R.color.purple_500, null));
-        dataSet.setColor(Color.argb(128, 103, 58, 183));
+        dataSet.setColor(getResources().getColor(R.color.green_500, null));
         dataSet.setValueTextSize(12f);
         dataSet.setDrawValues(false);
         BarData data = new BarData(dataSet);  // 여기서 선언 및 초기화

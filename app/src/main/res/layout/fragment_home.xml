@@ -67,10 +67,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:layout_weight="1"
-            android:background="@drawable/border_button"
+            android:background="@drawable/btn_border"
             android:backgroundTint="@android:color/transparent"
             android:text="요일"
-            android:textColor="#7B4BFF"
+            android:textStyle="bold"
+            android:textColor="@color/white"
             android:textSize="14sp" />
 
         <Space
@@ -83,10 +84,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:layout_weight="1"
-            android:background="@drawable/border_button"
+            android:background="@drawable/btn_border"
             android:backgroundTint="@android:color/transparent"
             android:text="오늘"
-            android:textColor="#7B4BFF"
+            android:textStyle="bold"
+            android:textColor="@color/white"
             android:textSize="14sp" />
 
     </LinearLayout>
